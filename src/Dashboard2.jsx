@@ -1,4 +1,3 @@
-/* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { useEffect, useState } from "react";
 import supabase from "./services/supabaseClient";
 
@@ -87,3 +86,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
