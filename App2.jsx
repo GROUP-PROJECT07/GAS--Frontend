@@ -3,18 +3,19 @@ import Navbar from "./Navbar";
 import Dashboard from "./Dashboard2";
 import Search from "./Search";
 import NewForm from "./NewForm2";
-
 import "./styleshome.css";
 
-const App = ({fullName, onLogout}) => {
+const App2 = ({ fullName, onLogout }) => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [correspondenceData, setCorrespondenceData] = useState([]);
 
+  // Add new correspondence to the dashboard
   const addCorrespondence = (newItem) => {
     setCorrespondenceData((prev) => [...prev, newItem]);
-    setActiveTab("dashboard"); 
+    setActiveTab("dashboard"); // Switch to dashboard after adding
   };
 
+  // Render the active tab's component
   const renderTab = () => {
     switch (activeTab) {
       case "dashboard":
@@ -30,6 +31,7 @@ const App = ({fullName, onLogout}) => {
 
   return (
     <div className="main2">
+      {/* Pass tab switch handler and logout to navbar */}
       <Navbar onTabChange={setActiveTab} onLogout={onLogout} />
       <div className="main">
         <div className="top-content">
@@ -42,5 +44,4 @@ const App = ({fullName, onLogout}) => {
   );
 };
 
-export default App;
-
+export default App2;
