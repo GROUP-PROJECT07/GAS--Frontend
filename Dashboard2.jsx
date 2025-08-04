@@ -1,11 +1,31 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import React from "react";
+import React, { useEffect, useState } from "react";
+import supabase from "./services/supabaseClient";
 
-const Dashboard = ({ correspondenceData }) => {
+const Dashboard = () => {
+  const [correspondenceData, setCorrespondenceData] = useState([]);
+
+  useEffect(() => {
+    const fetchCorrespondence = async () => {
+      const { data, error } = await supabase
+        .from("correspondence")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Error fetching correspondence:", error);
+      } else {
+        setCorrespondenceData(data);
+      }
+    };
+
+    fetchCorrespondence();
+  }, []);
+
   const total = correspondenceData.length;
-  const pending = correspondenceData.filter(item => item.Status?.toLowerCase() === "pending").length;
-  const completed = correspondenceData.filter(item => item.Status?.toLowerCase() === "completed").length;
-  
+  const pending = correspondenceData.filter(item => item.status?.toLowerCase() === "pending").length;
+  const completed = correspondenceData.filter(item => item.status?.toLowerCase() === "completed").length;
+
   return (
     <div id="dashboard" className="tab-content active">
       <h2 className="text-2xl font-bold mb-4">Dashboard Overview</h2>
@@ -23,7 +43,6 @@ const Dashboard = ({ correspondenceData }) => {
             <p className="text-xs uppercase text-gray-500">Completed</p>
             <h3 className="mt-1 text-xl sm:text-2xl font-medium text-green-600">{completed}</h3>
           </div>
-          
         </div>
       </div>
 
@@ -41,16 +60,24 @@ const Dashboard = ({ correspondenceData }) => {
           </tr>
         </thead>
         <tbody>
-          {correspondenceData.map((item, index) => (
-            <tr key={index}>
-              <td>{item.ID}</td>
-              <td>{item.Date}</td>
-              <td>{item.Sender}</td>
-              <td>{item.Recipient}</td>
-              <td>{item.Subject}</td>
-              <td>{item.Department}</td>
-              <td>{item.Status}</td>
-              <td><a href="#">{item.Attachment}</a></td>
+          {correspondenceData.map((item) => (
+            <tr key={item.id}>
+              <td>{item.id}</td>
+              <td>{new Date(item.date).toLocaleDateString()}</td>
+              <td>{item.sender}</td>
+              <td>{item.recipient}</td>
+              <td>{item.subject}</td>
+              <td>{item.department}</td>
+              <td>{item.status}</td>
+              <td>
+                {item.file_url ? (
+                  <a href={item.file_url} target="_blank" rel="noopener noreferrer">
+                    View File
+                  </a>
+                ) : (
+                  "No file"
+                )}
+              </td>
             </tr>
           ))}
         </tbody>
@@ -60,4 +87,3 @@ const Dashboard = ({ correspondenceData }) => {
 };
 
 export default Dashboard;
-
