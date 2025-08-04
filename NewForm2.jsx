@@ -1,40 +1,81 @@
 import React, { useState } from "react";
+import supabase from "./services/supabaseClient";
 
 const NewForm = ({ addCorrespondence }) => {
   const [formData, setFormData] = useState({
-    ID: `CMS-${Math.floor(Math.random() * 10000).toString().padStart(4, "0")}`,
     Date: "",
     Sender: "",
     Recipient: "",
     Subject: "",
     Department: "",
     Status: "Pending",
-    Attachment: "View"
+    Attachment: null,
   });
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
     if (name === "Attachment" && files.length > 0) {
-      setFormData({ ...formData, Attachment: files[0].name });
+      setFormData({ ...formData, Attachment: files[0] });
     } else {
       setFormData({ ...formData, [name]: value });
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    addCorrespondence(formData);
 
-    // Reset form
+    let fileUrl = null;
+
+    // 1️⃣ Upload file if any
+    if (formData.Attachment) {
+      const filePath = `files/${Date.now()}-${formData.Attachment.name}`;
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from("correspondence-files")
+        .upload(filePath, formData.Attachment);
+
+      if (uploadError) {
+        console.error("File upload failed:", uploadError.message);
+        return;
+      }
+
+      fileUrl = `${process.env.VITE_SUPABASE_URL}/storage/v1/object/public/correspondence-files/${filePath}`;
+    }
+
+    // 2️⃣ Insert new correspondence
+    const { data, error } = await supabase
+      .from("correspondence")
+      .insert([
+        {
+          date: formData.Date,
+          sender: formData.Sender,
+          recipient: formData.Recipient,
+          subject: formData.Subject,
+          department: formData.Department,
+          status: formData.Status,
+          file_url: fileUrl,
+        },
+      ])
+      .select();
+
+    if (error) {
+      console.error("Error saving correspondence:", error.message);
+      return;
+    }
+
+    // 3️⃣ Update dashboard instantly
+    if (data && data.length > 0) {
+      addCorrespondence(data[0]);
+    }
+
+    // 4️⃣ Reset form
     setFormData({
-      ID: `CMS-${Math.floor(Math.random() * 10000).toString().padStart(4, "0")}`,
       Date: "",
       Sender: "",
       Recipient: "",
       Subject: "",
       Department: "",
       Status: "Pending",
-      Attachment: "View"
+      Attachment: null,
     });
   };
 
@@ -44,23 +85,23 @@ const NewForm = ({ addCorrespondence }) => {
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label>Date:</label>
-          <input type="date" name="Date" value={formData.Date} onChange={handleChange} />
+          <input type="date" name="Date" value={formData.Date} onChange={handleChange} required />
         </div>
         <div className="form-group">
           <label>Sender:</label>
-          <input type="text" name="Sender" value={formData.Sender} onChange={handleChange} />
+          <input type="text" name="Sender" value={formData.Sender} onChange={handleChange} required />
         </div>
         <div className="form-group">
           <label>Recipient:</label>
-          <input type="text" name="Recipient" value={formData.Recipient} onChange={handleChange} />
+          <input type="text" name="Recipient" value={formData.Recipient} onChange={handleChange} required />
         </div>
         <div className="form-group">
           <label>Subject:</label>
-          <input type="text" name="Subject" value={formData.Subject} onChange={handleChange} />
+          <input type="text" name="Subject" value={formData.Subject} onChange={handleChange} required />
         </div>
         <div className="form-group">
           <label>Department:</label>
-          <input type="text" name="Department" value={formData.Department} onChange={handleChange} />
+          <input type="text" name="Department" value={formData.Department} onChange={handleChange} required />
         </div>
         <div className="form-group">
           <label>Status:</label>
@@ -73,7 +114,7 @@ const NewForm = ({ addCorrespondence }) => {
           <label>Attachment (PDF/Image):</label>
           <input type="file" name="Attachment" accept=".pdf,.jpg,.png" onChange={handleChange} />
         </div>
-        <textarea placeholder="Message content..." />
+        <textarea placeholder="Message content (optional)" />
         <button type="submit">Save Correspondence</button>
       </form>
     </div>
