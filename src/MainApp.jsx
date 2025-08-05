@@ -6,7 +6,7 @@ import AuthForm from "./AuthForm";
 import App2 from "./App2";
 import Dashboard2 from "./Dashboard2";
 import NewForm2 from "./NewForm2";
-import Search from "./Search"; // ✅ Added search route
+import Search from "./Search";
 
 function ProtectedRoute({ isAuthenticated, children }) {
   return isAuthenticated ? children : <Navigate to="/" />;
@@ -14,6 +14,7 @@ function ProtectedRoute({ isAuthenticated, children }) {
 
 function MainApp() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true); // ✅ Added loading state
   const [userFullName, setUserFullName] = useState("");
 
   useEffect(() => {
@@ -23,11 +24,11 @@ function MainApp() {
         setIsAuthenticated(true);
         setUserFullName(data.session.user.user_metadata?.full_name || "User");
       }
+      setLoading(false); // ✅ Stop loading after session check
     };
 
     checkSession();
 
-    // Listen for auth changes
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
         setIsAuthenticated(true);
@@ -49,10 +50,12 @@ function MainApp() {
     setIsAuthenticated(false);
   };
 
+  if (loading) return <div style={{ textAlign: "center", marginTop: "50px" }}>Loading...</div>; // ✅ Prevent blank screen
+
   return (
     <Router>
       <Routes>
-        {/* Login Route */}
+        {/* Login */}
         <Route
           path="/"
           element={
@@ -69,7 +72,7 @@ function MainApp() {
           }
         />
 
-        {/* Dashboard Route */}
+        {/* Dashboard */}
         <Route
           path="/dashboard"
           element={
@@ -81,7 +84,7 @@ function MainApp() {
           }
         />
 
-        {/* Search Route */}
+        {/* Search */}
         <Route
           path="/search"
           element={
@@ -93,7 +96,7 @@ function MainApp() {
           }
         />
 
-        {/* New Correspondence Route */}
+        {/* New Correspondence */}
         <Route
           path="/new"
           element={
