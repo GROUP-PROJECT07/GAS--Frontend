@@ -1,6 +1,10 @@
 // MainApp.jsx
 import React, { useEffect, useState } from "react";
+<<<<<<< HEAD
 import { HashRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+=======
+import { HashRouter as Router, Routes, Route, Navigate } from "react-router-dom"; //  Use HashRouter for Vercel
+>>>>>>> 317d85b (Fix: router and loading state for Vercel)
 import supabase from "./services/supabaseClient";
 import AuthForm from "./AuthForm";
 import App2 from "./App2";
@@ -16,6 +20,7 @@ function MainApp() {
 
   useEffect(() => {
     const checkSession = async () => {
+<<<<<<< HEAD
       const { data } = await supabase.auth.getSession();
       console.log("Session:", data.session);
       if (data.session) {
@@ -23,6 +28,21 @@ function MainApp() {
         setUserFullName(data.session.user.user_metadata?.full_name || "User");
       }
       setLoading(false);
+=======
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) console.error("Session error:", error);
+
+        if (data?.session) {
+          setIsAuthenticated(true);
+          setUserFullName(data.session.user.user_metadata?.full_name || "User");
+        }
+      } catch (err) {
+        console.error("Failed to fetch session:", err);
+      } finally {
+        setLoading(false); //  Ensure loading is always cleared
+      }
+>>>>>>> 317d85b (Fix: router and loading state for Vercel)
     };
 
     checkSession();
@@ -38,7 +58,7 @@ function MainApp() {
     });
 
     return () => {
-      listener.subscription.unsubscribe();
+      listener?.subscription?.unsubscribe();
     };
   }, []);
 
@@ -48,7 +68,13 @@ function MainApp() {
     setIsAuthenticated(false);
   };
 
+<<<<<<< HEAD
   if (loading) return <div style={{ textAlign: "center", marginTop: "50px" }}>Loading...</div>;
+=======
+  if (loading) {
+    return <div style={{ textAlign: "center", marginTop: "50px" }}>Loading...</div>;
+  }
+>>>>>>> 317d85b (Fix: router and loading state for Vercel)
 
   return (
     <Router>
