@@ -6,6 +6,7 @@ import AuthForm from "./AuthForm";
 import App2 from "./App2";
 import Dashboard2 from "./Dashboard2";
 import NewForm2 from "./NewForm2";
+import Search from "./Search"; // ✅ Added search route
 
 function ProtectedRoute({ isAuthenticated, children }) {
   return isAuthenticated ? children : <Navigate to="/" />;
@@ -13,8 +14,9 @@ function ProtectedRoute({ isAuthenticated, children }) {
 
 function MainApp() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-const [userFullName, setUserFullName] = useState("");
-useEffect(() => {
+  const [userFullName, setUserFullName] = useState("");
+
+  useEffect(() => {
     const checkSession = async () => {
       const { data } = await supabase.auth.getSession();
       if (data.session) {
@@ -41,11 +43,11 @@ useEffect(() => {
     };
   }, []);
 
-  const handleLogout = async() => {
- await supabase.auth.signOut();
-setUserFullName("");
-  setIsAuthenticated(false);
-};
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setUserFullName("");
+    setIsAuthenticated(false);
+  };
 
   return (
     <Router>
@@ -57,10 +59,12 @@ setUserFullName("");
             isAuthenticated ? (
               <Navigate to="/dashboard" />
             ) : (
-              <AuthForm onLoginSuccess={(name) => {
-                setUserFullName(name);
-                setIsAuthenticated(true);
-              }} />
+              <AuthForm
+                onLoginSuccess={(name) => {
+                  setUserFullName(name);
+                  setIsAuthenticated(true);
+                }}
+              />
             )
           }
         />
@@ -77,12 +81,23 @@ setUserFullName("");
           }
         />
 
+        {/* Search Route */}
+        <Route
+          path="/search"
+          element={
+            <ProtectedRoute isAuthenticated={isAuthenticated}>
+              <App2 fullName={userFullName} onLogout={handleLogout}>
+                <Search />
+              </App2>
+            </ProtectedRoute>
+          }
+        />
+
         {/* New Correspondence Route */}
         <Route
           path="/new"
           element={
-            <ProtectedRoute
-              isAuthenticated={isAuthenticated}>
+            <ProtectedRoute isAuthenticated={isAuthenticated}>
               <App2 fullName={userFullName} onLogout={handleLogout}>
                 <NewForm2 />
               </App2>
@@ -94,8 +109,4 @@ setUserFullName("");
   );
 }
 
-
-    
-
 export default MainApp;
-
