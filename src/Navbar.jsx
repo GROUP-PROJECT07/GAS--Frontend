@@ -1,18 +1,38 @@
-/* eslint-disable jsx-a11y/anchor-is-valid */
-
+import { Link } from "react-router-dom";
 
 const Navbar = ({ onTabChange, onLogout }) => {
   return (
     <nav>
       <ul>
-        <li><a href="#" className="Company"><span className="nav-item">Ghana Audit Service</span></a></li>
-        <li><a href="#" onClick={() => onTabChange("dashboard")}><span className="nav-item">Dashboard</span></a></li>
-        <li><a href="#" onClick={() => onTabChange("search")}><span className="nav-item">Search</span></a></li>
-        <li><a href="#" onClick={() => onTabChange("newForm")}><span className="nav-item">New FORM</span></a></li>
-        <li><a href="#" className="logout" onClick={(e) => {
-              e.preventDefault(); // prevent page reload
-              onLogout(); // call logout handler
-            }}><span className="nav-item">LOGOUT</span></a></li>
+        <li className="Company">
+          <span className="nav-item">Ghana Audit Service</span>
+        </li>
+        <li>
+          <button onClick={() => onTabChange("dashboard")} className="nav-item">
+            Dashboard
+          </button>
+        </li>
+        <li>
+          <button onClick={() => onTabChange("search")} className="nav-item">
+            Search
+          </button>
+        </li>
+        <li>
+          <button onClick={() => onTabChange("newForm")} className="nav-item">
+            New FORM
+          </button>
+        </li>
+        <li>
+          <button
+            className="logout nav-item"
+            onClick={(e) => {
+              e.preventDefault();
+              onLogout();
+            }}
+          >
+            LOGOUT
+          </button>
+        </li>
       </ul>
     </nav>
   );
