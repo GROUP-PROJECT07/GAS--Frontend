@@ -1,37 +1,28 @@
-import { Link } from "react-router-dom";
+/* eslint-disable jsx-a11y/anchor-is-valid */
+import { Link, useNavigate } from "react-router-dom";
 
-const Navbar = ({ onTabChange, onLogout }) => {
+const Navbar = ({ onLogout }) => {
+  const navigate = useNavigate();
+
   return (
     <nav>
       <ul>
-        <li className="Company">
-          <span className="nav-item">Ghana Audit Service</span>
-        </li>
+        <li><Link to="/dashboard" className="Company"><span className="nav-item">Ghana Audit Service</span></Link></li>
+        <li><Link to="/dashboard"><span className="nav-item">Dashboard</span></Link></li>
+        <li><Link to="/search"><span className="nav-item">Search</span></Link></li>
+        <li><Link to="/new"><span className="nav-item">New FORM</span></Link></li>
         <li>
-          <button onClick={() => onTabChange("dashboard")} className="nav-item">
-            Dashboard
-          </button>
-        </li>
-        <li>
-          <button onClick={() => onTabChange("search")} className="nav-item">
-            Search
-          </button>
-        </li>
-        <li>
-          <button onClick={() => onTabChange("newForm")} className="nav-item">
-            New FORM
-          </button>
-        </li>
-        <li>
-          <button
-            className="logout nav-item"
+          <a
+            href="#"
+            className="logout"
             onClick={(e) => {
               e.preventDefault();
               onLogout();
+              navigate("/"); // redirect to login
             }}
           >
-            LOGOUT
-          </button>
+            <span className="nav-item">LOGOUT</span>
+          </a>
         </li>
       </ul>
     </nav>
