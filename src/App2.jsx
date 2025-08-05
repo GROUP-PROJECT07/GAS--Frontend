@@ -1,101 +1,179 @@
-import React, { useState, useEffect } from 'react';
-import supabase from './services/supabaseClient';
-import Navbar from './Navbar'; // Adjust import path as needed
+import React, { useEffect, useState } from "react";
+import { HashRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import supabase from "./services/supabaseClient";
+import AuthForm from "./AuthForm";
+import App2 from "./App2";
 
-const App2 = ({ fullName, onLogout }) => {
-  const [activeTab, setActiveTab] = useState("dashboard");
-  const [correspondenceData, setCorrespondenceData] = useState([]);
+function ProtectedRoute({ isAuthenticated, children }) {
+  return isAuthenticated ? children : <Navigate to="/" />;
+}
 
-  // Fetch correspondence when dashboard tab is active
+function MainApp() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [userFullName, setUserFullName] = useState("");
+  const [error, setError] = useState(null);
+
   useEffect(() => {
-    if (activeTab === "dashboard") {
-      const fetchCorrespondence = async () => {
-        try {
-          const { data, error } = await supabase
-            .from("correspondence")
-            .select("*")
-            .order("created_at", { ascending: false });
-          
-          if (error) {
-            console.error("Error fetching correspondence:", error);
-          } else {
-            setCorrespondenceData(data || []);
-          }
-        } catch (err) {
-          console.error("Failed to fetch correspondence:", err);
+    console.log('MainApp: Starting session check...');
+    
+    const checkSession = async () => {
+      try {
+        console.log('MainApp: Fetching session...');
+        const { data, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error("MainApp: Session error:", error);
+          setError(`Authentication error: ${error.message}`);
+          return;
         }
-      };
-      fetchCorrespondence();
-    }
-  }, [activeTab]);
 
-  // Render content based on active tab
-  const renderTabContent = () => {
-    switch (activeTab) {
-      case "dashboard":
-        return (
-          <div className="dashboard-content">
-            <h3>Dashboard</h3>
-            {correspondenceData.length > 0 ? (
-              <div className="correspondence-list">
-                {correspondenceData.map((item, index) => (
-                  <div key={item.id || index} className="correspondence-item">
-                    {/* Render your correspondence data here */}
-                    <p>{item.title || 'Correspondence Item'}</p>
-                    <small>{new Date(item.created_at).toLocaleDateString()}</small>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p>No correspondence found.</p>
-            )}
-          </div>
-        );
+        console.log('MainApp: Session data received:', !!data?.session);
+
+        if (data?.session) {
+          setIsAuthenticated(true);
+          setUserFullName(data.session.user.user_metadata?.full_name || "User");
+          console.log('MainApp: User authenticated:', data.session.user.email);
+        } else {
+          console.log('MainApp: No active session found');
+        }
+      } catch (err) {
+        console.error("MainApp: Failed to fetch session:", err);
+        setError(`Failed to initialize authentication: ${err.message}`);
+      } finally {
+        setLoading(false);
+        console.log('MainApp: Session check complete');
+      }
+    };
+
+    checkSession();
+
+    // Set up auth state listener
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log('MainApp: Auth state changed:', _event, session?.user?.email);
       
-      case "create":
-        return (
-          <div className="create-content">
-            <h3>Create New Correspondence</h3>
-            {/* Add your create form here */}
-            <p>Create form will go here</p>
-          </div>
-        );
-      
-      case "settings":
-        return (
-          <div className="settings-content">
-            <h3>Settings</h3>
-            {/* Add your settings content here */}
-            <p>Settings content will go here</p>
-          </div>
-        );
-      
-      default:
-        return (
-          <div className="default-content">
-            <h3>Welcome to Correspondence System</h3>
-            <p>Select a tab to get started.</p>
-          </div>
-        );
+      if (session) {
+        setIsAuthenticated(true);
+        setUserFullName(session.user.user_metadata?.full_name || "User");
+        setError(null); // Clear any previous errors
+      } else {
+        setIsAuthenticated(false);
+        setUserFullName("");
+      }
+    });
+
+    return () => {
+      console.log('MainApp: Cleaning up auth listener');
+      listener?.subscription?.unsubscribe();
+    };
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      console.log('MainApp: Logging out...');
+      await supabase.auth.signOut();
+      setUserFullName("");
+      setIsAuthenticated(false);
+      setError(null);
+    } catch (err) {
+      console.error('MainApp: Logout error:', err);
+      setError(`Logout failed: ${err.message}`);
     }
   };
 
-  return (
-    <div className="main2">
-      <Navbar onTabChange={setActiveTab} onLogout={onLogout} />
-      <div className="main">
-        <div className="top-content">
-          <h1>Correspondence System</h1>
-          <h2>{fullName}</h2>
-        </div>
-        
-        {/* Render content based on active tab */}
-        <div className="tab-content">
-          {renderTabContent()}
-        </div>
+  // Show error state
+  if (error) {
+    return (
+      <div style={{ 
+        textAlign: "center", 
+        marginTop: "50px",
+        padding: "20px",
+        backgroundColor: "#ffebee",
+        color: "#c62828",
+        minHeight: "100vh"
+      }}>
+        <h2>Application Error</h2>
+        <p>{error}</p>
+        <button 
+          onClick={() => {
+            setError(null);
+            window.location.reload();
+          }}
+          style={{
+            marginTop: "20px",
+            padding: "10px 20px",
+            backgroundColor: "#1976d2",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer"
+          }}
+        >
+          Retry
+        </button>
       </div>
+    );
+  }
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div style={{ 
+        textAlign: "center", 
+        marginTop: "50px",
+        backgroundColor: "#fff",
+        minHeight: "100vh",
+        padding: "20px"
+      }}>
+        <h2>Loading...</h2>
+        <p>Initializing application...</p>
+      </div>
+    );
+  }
+
+  console.log('MainApp: Rendering routes, isAuthenticated:', isAuthenticated);
+
+  return (
+    <div style={{ minHeight: "100vh" }}>
+      <Router>
+        <Routes>
+          {/* Login Route */}
+          <Route
+            path="/"
+            element={
+              isAuthenticated ? (
+                <Navigate to="/app" replace />
+              ) : (
+                <AuthForm
+                  onLoginSuccess={(name) => {
+                    console.log('MainApp: Login success:', name);
+                    setUserFullName(name);
+                    setIsAuthenticated(true);
+                  }}
+                />
+              )
+            }
+          />
+
+          {/* Main App Route */}
+          <Route
+            path="/app"
+            element={
+              <ProtectedRoute isAuthenticated={isAuthenticated}>
+                <App2 fullName={userFullName} onLogout={handleLogout} />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Catch-all route */}
+          <Route
+            path="*"
+            element={<Navigate to="/" replace />}
+          />
+        </Routes>
+      </Router>
     </div>
   );
-};
+}
 
-export default App2;
+export default MainApp;
