@@ -57,7 +57,7 @@ function MainApp() {
           path="/"
           element={
             isAuthenticated ? (
-              <Navigate to="/dashboard" />
+              <Navigate to="/app" />
             ) : (
               <AuthForm
                 onLoginSuccess={(name) => {
@@ -69,7 +69,7 @@ function MainApp() {
           }
         />
         <Route
-          path="/*"
+          path="/app/*"
           element={
             <ProtectedRoute isAuthenticated={isAuthenticated}>
               <App2 fullName={userFullName} onLogout={handleLogout} />
