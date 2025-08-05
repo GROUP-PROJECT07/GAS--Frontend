@@ -6,5 +6,5 @@
       "use": "@vercel/static-build"
     }
   ],
-  "framework": "vite"
+  "framework": "create-react-app"
 }
