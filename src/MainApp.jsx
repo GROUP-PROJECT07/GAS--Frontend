@@ -1,7 +1,7 @@
 // MainApp.jsx
 import React, { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { supabase } from "./supabaseClient";
+import supabase from "./services/supabaseClient";
 import AuthForm from "./AuthForm";
 import App2 from "./App2";
 import Dashboard2 from "./Dashboard2";

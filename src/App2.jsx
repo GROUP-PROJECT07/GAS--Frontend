@@ -3,7 +3,7 @@ import Navbar from "./Navbar";
 import Dashboard from "./Dashboard2";
 import Search from "./Search";
 import NewForm from "./NewForm2";
-import { supabase } from "./services/supabaseClient"; 
+import supabase from "./services/supabaseClient";
 import "./styleshome.css";
 
 const App2 = ({ fullName, onLogout }) => {

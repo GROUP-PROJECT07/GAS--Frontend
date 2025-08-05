@@ -3,6 +3,8 @@ import ReactDOM from 'react-dom/client';
 import './styleshome.css';
 import MainApp from './MainApp';
 import reportWebVitals from './reportWebVitals';
+import supabase from "./services/supabaseClient";
+
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

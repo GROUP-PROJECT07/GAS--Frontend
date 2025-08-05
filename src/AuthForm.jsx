@@ -1,12 +1,11 @@
-
 import React, { useState } from "react";
 import "./styles.css";
-import { supabase } from "./supabaseClient";
+import supabase from "./services/supabaseClient";
 
-
-function AuthForm({onLoginSuccess}) {
+function AuthForm({ onLoginSuccess }) {
   const [view, setView] = useState("login"); // 'login' | 'register' | 'forgot'
   const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const handleLogin = async (e) => {
@@ -21,7 +20,10 @@ function AuthForm({onLoginSuccess}) {
     } else {
       const user = data.user;
       localStorage.setItem("auth", "true");
-      localStorage.setItem("userFullName", user?.user_metadata?.full_name || fullName);
+      localStorage.setItem(
+        "userFullName",
+        user?.user_metadata?.full_name || fullName
+      );
       onLoginSuccess(user?.user_metadata?.full_name || fullName);
     }
   };
@@ -54,16 +56,24 @@ function AuthForm({onLoginSuccess}) {
     }
   };
 
-
   const renderForm = () => {
     switch (view) {
       case "login":
         return (
           <div className="wrapper">
             <h1>Login</h1>
-            <form onSubmit={(e) => {handleLogin}>
-                  <div className="input-box">
-                    <input
+            <form onSubmit={handleLogin}>
+              <div className="input-box">
+                <input
+                  type="email"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="input-box">
+                <input
                   type="password"
                   placeholder="Password"
                   value={password}
@@ -82,7 +92,9 @@ function AuthForm({onLoginSuccess}) {
                   Forgot password?
                 </span>
               </div>
-              <button type="submit" className="btn">Login</button>
+              <button type="submit" className="btn">
+                Login
+              </button>
               <div className="register-link">
                 <p>
                   Don't have an account?{" "}
@@ -97,7 +109,8 @@ function AuthForm({onLoginSuccess}) {
             </form>
           </div>
         );
-        case "register":
+
+      case "register":
         return (
           <div className="wrapper">
             <h1>Register</h1>
@@ -129,7 +142,9 @@ function AuthForm({onLoginSuccess}) {
                   required
                 />
               </div>
-              <button type="submit" className="btn">Register</button>
+              <button type="submit" className="btn">
+                Register
+              </button>
               <div className="register-link">
                 <p>
                   Already have an account?{" "}
@@ -159,7 +174,9 @@ function AuthForm({onLoginSuccess}) {
                   required
                 />
               </div>
-              <button type="submit" className="btn">Send Reset Link</button>
+              <button type="submit" className="btn">
+                Send Reset Link
+              </button>
               <div className="register-link">
                 <p>
                   Remembered your password?{" "}
@@ -171,7 +188,9 @@ function AuthForm({onLoginSuccess}) {
                   </span>
                 </p>
               </div>
-              );
+            </form>
+          </div>
+        );
 
       default:
         return null;
@@ -181,8 +200,4 @@ function AuthForm({onLoginSuccess}) {
   return <div>{renderForm()}</div>;
 }
 
-export default AuthForm;
-
-
-
-                
+export default AuthForm;
