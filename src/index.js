@@ -1,9 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import './styleshome.css';
+import MainApp from './MainApp';
+import reportWebVitals from './reportWebVitals';
 
-// Add global error handlers
+// Add global error handlers for debugging
 window.addEventListener('error', (event) => {
-  console.error('Global error:', event.error);
+  console.error(' Global JavaScript Error:', event.error);
   console.error('Error details:', {
     message: event.message,
     filename: event.filename,
@@ -13,94 +16,73 @@ window.addEventListener('error', (event) => {
 });
 
 window.addEventListener('unhandledrejection', (event) => {
-  console.error('Unhandled promise rejection:', event.reason);
+  console.error(' Unhandled Promise Rejection:', event.reason);
 });
 
-// Test basic functionality first
-console.log('index.js: Starting application...');
-console.log('index.js: React version:', React.version);
+console.log(' Starting application...');
+console.log(' React version:', React.version);
+console.log(' Environment:', process.env.NODE_ENV);
 
 try {
-  // Try to import CSS
-  console.log('index.js: Importing CSS...');
-  import('./styleshome.css').catch(err => {
-    console.warn('index.js: CSS import failed:', err);
-  });
+  const rootElement = document.getElementById('root');
+  if (!rootElement) {
+    throw new Error('Root element #root not found in DOM');
+  }
+
+  console.log(' Root element found');
+  console.log(' Creating React root...');
   
-  // Import components
-  console.log('index.js: Importing components...');
+  const root = ReactDOM.createRoot(rootElement);
   
-  const startApp = async () => {
-    try {
-      // Dynamic imports to catch errors
-      const { default: MainApp } = await import('./MainApp');
-      const { default: reportWebVitals } = await import('./reportWebVitals');
-      
-      console.log('index.js: Components imported successfully');
-      console.log('index.js: Getting root element...');
-      
-      const rootElement = document.getElementById('root');
-      if (!rootElement) {
-        throw new Error('Root element not found');
-      }
-      
-      console.log('index.js: Creating React root...');
-      const root = ReactDOM.createRoot(rootElement);
-      
-      console.log('index.js: Rendering app...');
-      root.render(
-        <React.StrictMode>
-          <MainApp />
-        </React.StrictMode>
-      );
-      
-      console.log('index.js: App rendered successfully');
-      
-      // Start web vitals
-      reportWebVitals();
-      
-    } catch (error) {
-      console.error('index.js: Error during app startup:', error);
-      
-      // Render error directly to DOM if React fails
-      const rootElement = document.getElementById('root');
-      if (rootElement) {
-        rootElement.innerHTML = `
-          <div style="
-            padding: 20px; 
-            background-color: #ffebee; 
-            color: #c62828; 
-            font-family: Arial, sans-serif;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-          ">
-            <h1>Application Startup Error</h1>
-            <p>The application failed to start properly.</p>
-            <details style="margin-top: 20px; padding: 10px; background: white; border-radius: 4px;">
-              <summary>Error Details</summary>
-              <pre style="white-space: pre-wrap; font-size: 12px;">${error.toString()}</pre>
-              <pre style="white-space: pre-wrap; font-size: 12px;">${error.stack || 'No stack trace'}</pre>
-            </details>
-            <button onclick="window.location.reload()" style="
-              margin-top: 20px;
-              padding: 10px 20px;
-              background-color: #1976d2;
-              color: white;
-              border: none;
-              border-radius: 4px;
-              cursor: pointer;
-            ">Reload Page</button>
-          </div>
-        `;
-      }
-    }
-  };
+  console.log(' Rendering MainApp...');
   
-  startApp();
+  root.render(
+    <React.StrictMode>
+      <MainApp />
+    </React.StrictMode>
+  );
+  
+  console.log(' MainApp rendered successfully');
+  
+  // Start web vitals
+  reportWebVitals();
   
 } catch (error) {
-  console.error('index.js: Critical error:', error);
+  console.error(' Critical error in index.js:', error);
+  
+  // Show error on page if React completely fails
+  const rootElement = document.getElementById('root');
+  if (rootElement) {
+    rootElement.innerHTML = `
+      <div style="
+        padding: 20px; 
+        background-color: #ffebee; 
+        color: #c62828; 
+        font-family: Arial, sans-serif;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      ">
+        <h1> Critical Application Error</h1>
+        <p>The application failed to start.</p>
+        <div style="margin-top: 20px; padding: 15px; background: white; border-radius: 4px; max-width: 80%; overflow: auto;">
+          <strong>Error:</strong><br>
+          <pre style="white-space: pre-wrap; font-size: 12px; color: #d32f2f;">${error.toString()}</pre>
+          ${error.stack ? `<br><strong>Stack:</strong><br><pre style="white-space: pre-wrap; font-size: 10px; color: #666;">${error.stack}</pre>` : ''}
+        </div>
+        <button onclick="window.location.reload()" style="
+          margin-top: 20px;
+          padding: 10px 20px;
+          background-color: #1976d2;
+          color: white;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 14px;
+        ">🔄 Reload Page</button>
+      </div>
+    `;
+  }
 }
