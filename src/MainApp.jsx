@@ -1,12 +1,9 @@
 // MainApp.jsx
 import React, { useEffect, useState } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { HashRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import supabase from "./services/supabaseClient";
 import AuthForm from "./AuthForm";
 import App2 from "./App2";
-import Dashboard2 from "./Dashboard2";
-import NewForm2 from "./NewForm2";
-import Search from "./Search";
 
 function ProtectedRoute({ isAuthenticated, children }) {
   return isAuthenticated ? children : <Navigate to="/" />;
@@ -14,17 +11,18 @@ function ProtectedRoute({ isAuthenticated, children }) {
 
 function MainApp() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [loading, setLoading] = useState(true); // ✅ Added loading state
+  const [loading, setLoading] = useState(true);
   const [userFullName, setUserFullName] = useState("");
 
   useEffect(() => {
     const checkSession = async () => {
       const { data } = await supabase.auth.getSession();
+      console.log("Session:", data.session);
       if (data.session) {
         setIsAuthenticated(true);
         setUserFullName(data.session.user.user_metadata?.full_name || "User");
       }
-      setLoading(false); // ✅ Stop loading after session check
+      setLoading(false);
     };
 
     checkSession();
@@ -50,12 +48,11 @@ function MainApp() {
     setIsAuthenticated(false);
   };
 
-  if (loading) return <div style={{ textAlign: "center", marginTop: "50px" }}>Loading...</div>; // ✅ Prevent blank screen
+  if (loading) return <div style={{ textAlign: "center", marginTop: "50px" }}>Loading...</div>;
 
   return (
     <Router>
       <Routes>
-        {/* Login */}
         <Route
           path="/"
           element={
@@ -71,39 +68,11 @@ function MainApp() {
             )
           }
         />
-
-        {/* Dashboard */}
         <Route
-          path="/dashboard"
+          path="/*"
           element={
             <ProtectedRoute isAuthenticated={isAuthenticated}>
-              <App2 fullName={userFullName} onLogout={handleLogout}>
-                <Dashboard2 />
-              </App2>
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Search */}
-        <Route
-          path="/search"
-          element={
-            <ProtectedRoute isAuthenticated={isAuthenticated}>
-              <App2 fullName={userFullName} onLogout={handleLogout}>
-                <Search />
-              </App2>
-            </ProtectedRoute>
-          }
-        />
-
-        {/* New Correspondence */}
-        <Route
-          path="/new"
-          element={
-            <ProtectedRoute isAuthenticated={isAuthenticated}>
-              <App2 fullName={userFullName} onLogout={handleLogout}>
-                <NewForm2 />
-              </App2>
+              <App2 fullName={userFullName} onLogout={handleLogout} />
             </ProtectedRoute>
           }
         />
