@@ -1,22 +1,40 @@
 import React, { useEffect, useState } from "react";
 import { HashRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import supabase from "./services/supabaseClient";
-import AuthForm from "./AuthForm";
-import App2 from "./App2";
 
-// Error Boundary Component
+// Minimal test component to verify basic rendering
+function TestComponent() {
+  return (
+    <div style={{ 
+      padding: '20px', 
+      backgroundColor: 'lightblue', 
+      minHeight: '100vh',
+      textAlign: 'center'
+    }}>
+      <h1>TEST COMPONENT WORKING</h1>
+      <p>If you see this, React is rendering correctly</p>
+      <p>Current URL: {window.location.href}</p>
+      <p>Current Hash: {window.location.hash}</p>
+    </div>
+  );
+}
+
+// Error boundary to catch any rendering errors
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false, error: null };
+    this.state = { hasError: false, error: null, errorInfo: null };
   }
 
   static getDerivedStateFromError(error) {
-    return { hasError: true, error };
+    return { hasError: true };
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error('Error caught by boundary:', error, errorInfo);
+    console.error('Error Boundary Caught:', error, errorInfo);
+    this.setState({
+      error: error,
+      errorInfo: errorInfo
+    });
   }
 
   render() {
@@ -24,16 +42,16 @@ class ErrorBoundary extends React.Component {
       return (
         <div style={{ 
           padding: '20px', 
-          textAlign: 'center',
-          color: 'red',
-          backgroundColor: '#fff',
+          backgroundColor: 'red', 
+          color: 'white',
           minHeight: '100vh'
         }}>
-          <h2>Something went wrong</h2>
-          <p>{this.state.error?.message}</p>
-          <button onClick={() => window.location.reload()}>
-            Reload Page
-          </button>
+          <h2>Something went wrong!</h2>
+          <details style={{ whiteSpace: 'pre-wrap' }}>
+            {this.state.error && this.state.error.toString()}
+            <br />
+            {this.state.errorInfo.componentStack}
+          </details>
         </div>
       );
     }
@@ -42,159 +60,73 @@ class ErrorBoundary extends React.Component {
   }
 }
 
-function ProtectedRoute({ isAuthenticated, children }) {
-  return isAuthenticated ? children : <Navigate to="/" />;
-}
-
 function MainApp() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [userFullName, setUserFullName] = useState("");
-  const [error, setError] = useState(null);
+  const [debug, setDebug] = useState('Starting MainApp...');
+  const [supabaseLoaded, setSupabaseLoaded] = useState(false);
 
   useEffect(() => {
-    console.log('MainApp mounted, checking session...');
+    console.log('MainApp useEffect triggered');
+    setDebug('MainApp useEffect running...');
     
-    const checkSession = async () => {
+    // Test if we can import supabase
+    const testSupabase = async () => {
       try {
-        // Add a check to ensure supabase is properly initialized
-        if (!supabase) {
-          throw new Error('Supabase client not initialized');
-        }
-
-        console.log('Fetching session...');
-        const { data, error } = await supabase.auth.getSession();
+        setDebug('Attempting to import supabase...');
         
-        if (error) {
-          console.error("Session error:", error);
-          setError(error.message);
-          return;
-        }
-
-        console.log('Session data:', data);
-
-        if (data?.session) {
-          setIsAuthenticated(true);
-          setUserFullName(data.session.user.user_metadata?.full_name || "User");
-          console.log('User authenticated:', data.session.user.email);
+        // Dynamic import to catch import errors
+        const { default: supabase } = await import('./services/supabaseClient');
+        
+        if (supabase) {
+          setDebug('Supabase imported successfully');
+          setSupabaseLoaded(true);
+          
+          // Test basic supabase functionality
+          try {
+            const { data, error } = await supabase.auth.getSession();
+            setDebug(`Session check complete. Error: ${error ? error.message : 'none'}`);
+          } catch (sessionError) {
+            setDebug(`Session error: ${sessionError.message}`);
+          }
         } else {
-          console.log('No active session found');
+          setDebug('Supabase import returned null/undefined');
         }
-      } catch (err) {
-        console.error("Failed to fetch session:", err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
-        console.log('Session check complete');
+      } catch (importError) {
+        console.error('Supabase import error:', importError);
+        setDebug(`Supabase import failed: ${importError.message}`);
       }
     };
 
-    checkSession();
-
-    // Set up auth state listener
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log('Auth state changed:', _event, session?.user?.email);
-      
-      if (session) {
-        setIsAuthenticated(true);
-        setUserFullName(session.user.user_metadata?.full_name || "User");
-      } else {
-        setIsAuthenticated(false);
-        setUserFullName("");
-      }
-    });
-
-    return () => {
-      console.log('Cleaning up auth listener');
-      listener?.subscription?.unsubscribe();
-    };
+    testSupabase();
   }, []);
 
-  const handleLogout = async () => {
-    try {
-      console.log('Logging out...');
-      await supabase.auth.signOut();
-      setUserFullName("");
-      setIsAuthenticated(false);
-    } catch (err) {
-      console.error('Logout error:', err);
-    }
-  };
-
-  // Show error state
-  if (error) {
-    return (
-      <div style={{ 
-        textAlign: "center", 
-        marginTop: "50px",
-        padding: "20px",
-        color: "red"
-      }}>
-        <h2>Error</h2>
-        <p>{error}</p>
-        <button onClick={() => window.location.reload()}>
-          Reload Page
-        </button>
-      </div>
-    );
-  }
-
-  // Show loading state
-  if (loading) {
-    return (
-      <div style={{ 
-        textAlign: "center", 
-        marginTop: "50px",
-        backgroundColor: "#fff",
-        minHeight: "100vh",
-        padding: "20px"
-      }}>
-        <h2>Loading...</h2>
-        <p>Initializing application...</p>
-      </div>
-    );
-  }
-
-  console.log('Rendering MainApp, isAuthenticated:', isAuthenticated);
+  console.log('MainApp render, debug:', debug);
 
   return (
     <ErrorBoundary>
-      <div style={{ minHeight: "100vh", backgroundColor: "#f5f5f5" }}>
+      <div style={{ 
+        minHeight: '100vh', 
+        backgroundColor: '#f0f0f0',
+        padding: '20px'
+      }}>
+        <div style={{ 
+          backgroundColor: 'white', 
+          padding: '20px', 
+          marginBottom: '20px',
+          border: '2px solid green'
+        }}>
+          <h1>DEBUG INFO</h1>
+          <p><strong>Status:</strong> {debug}</p>
+          <p><strong>Supabase Loaded:</strong> {supabaseLoaded ? 'Yes' : 'No'}</p>
+          <p><strong>Environment:</strong> {process.env.NODE_ENV}</p>
+          <p><strong>React Version:</strong> {React.version}</p>
+          <p><strong>Current Time:</strong> {new Date().toISOString()}</p>
+        </div>
+
         <Router>
           <Routes>
-            {/* Login Route */}
-            <Route
-              path="/"
-              element={
-                isAuthenticated ? (
-                  <Navigate to="/app" replace />
-                ) : (
-                  <AuthForm
-                    onLoginSuccess={(name) => {
-                      console.log('Login success:', name);
-                      setUserFullName(name);
-                      setIsAuthenticated(true);
-                    }}
-                  />
-                )
-              }
-            />
-
-            {/* Main App Route */}
-            <Route
-              path="/app/*"
-              element={
-                <ProtectedRoute isAuthenticated={isAuthenticated}>
-                  <App2 fullName={userFullName} onLogout={handleLogout} />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* Catch-all route */}
-            <Route
-              path="*"
-              element={<Navigate to="/" replace />}
-            />
+            <Route path="/" element={<TestComponent />} />
+            <Route path="/app" element={<TestComponent />} />
+            <Route path="*" element={<TestComponent />} />
           </Routes>
         </Router>
       </div>
