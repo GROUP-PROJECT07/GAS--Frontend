@@ -33,6 +33,7 @@
   "license": "ISC",
   "description": "",
   "devDependencies": {
+    "eslint-plugin-jsx-a11y": "^6.10.2",
     "react-scripts": "^5.0.1"
   }
 }
