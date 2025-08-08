@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { supabase } from "./services/supabaseClient"; 
+import supabase from "./services/supabaseClient";
 
 const Dashboard = () => {
   const [correspondenceData, setCorrespondenceData] = useState([]);
@@ -86,5 +86,6 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
 
 
