@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { supabase } from "./services/supabaseClient"; 
+import supabase from "./services/supabaseClient";
 
 const NewForm = ({ addCorrespondence }) => {
   const [formData, setFormData] = useState({
@@ -129,4 +129,5 @@ const NewForm = ({ addCorrespondence }) => {
 };
 
 export default NewForm;
+
 
