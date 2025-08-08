@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { HashRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { supabase } from "./services/supabaseClient"; 
+import supabase from "./services/supabaseClient";
 import AuthForm from "./AuthForm";
 import App2 from "./App2";
 
@@ -177,4 +177,5 @@ function MainApp() {
 }
 
 export default MainApp;
+
 
