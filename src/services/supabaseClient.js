@@ -26,7 +26,7 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 // Optional: quick connection check on startup
 (async () => {
   try {
-    const { data, error } = await supabase.from('_test').select('*').limit(1);
+    const { error } = await supabase.from('_test').select('*').limit(1);
     if (error) {
       console.warn(' Supabase connection test failed:', error.message);
     } else {
