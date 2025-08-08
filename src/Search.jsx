@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import supabase from "./services/supabaseClient";
+import { supabase } from "./services/supabaseClient"; 
 
 const Search = () => {
   const [data, setData] = useState([]); // All correspondence
@@ -112,3 +112,4 @@ const Search = () => {
 };
 
 export default Search;
+
