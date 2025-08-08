@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "./styles.css";
-import { supabase } from "./services/supabaseClient"; 
+import supabase from "./services/supabaseClient";
 
 function AuthForm({ onLoginSuccess }) {
   const [view, setView] = useState("login"); // 'login' | 'register' | 'forgot'
@@ -199,3 +199,4 @@ function AuthForm({ onLoginSuccess }) {
 }
 
 export default AuthForm;
+
