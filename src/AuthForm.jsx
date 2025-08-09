@@ -8,6 +8,7 @@ function AuthForm({ onLoginSuccess }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  // --- Login ---
   const handleLogin = async (e) => {
     e.preventDefault();
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -24,13 +25,14 @@ function AuthForm({ onLoginSuccess }) {
         "userFullName",
         user?.user_metadata?.full_name || fullName
       );
-      onLoginSuccess(user?.user_metadata?.full_name || fullName);
+      onLoginSuccess?.(user?.user_metadata?.full_name || fullName);
     }
   };
 
+  // --- Register ---
   const handleRegister = async (e) => {
     e.preventDefault();
-    const { data, error } = await supabase.auth.signUp({
+    const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -45,6 +47,7 @@ function AuthForm({ onLoginSuccess }) {
     }
   };
 
+  // --- Forgot Password ---
   const handleForgotPassword = async (e) => {
     e.preventDefault();
     const { error } = await supabase.auth.resetPasswordForEmail(email);
@@ -56,6 +59,7 @@ function AuthForm({ onLoginSuccess }) {
     }
   };
 
+  // --- UI Forms ---
   const renderForm = () => {
     switch (view) {
       case "login":
@@ -92,9 +96,7 @@ function AuthForm({ onLoginSuccess }) {
                   Forgot password?
                 </span>
               </div>
-              <button type="submit" className="btn">
-                Login
-              </button>
+              <button type="submit" className="btn">Login</button>
               <div className="register-link">
                 <p>
                   Don't have an account?{" "}
@@ -142,9 +144,7 @@ function AuthForm({ onLoginSuccess }) {
                   required
                 />
               </div>
-              <button type="submit" className="btn">
-                Register
-              </button>
+              <button type="submit" className="btn">Register</button>
               <div className="register-link">
                 <p>
                   Already have an account?{" "}
@@ -174,9 +174,7 @@ function AuthForm({ onLoginSuccess }) {
                   required
                 />
               </div>
-              <button type="submit" className="btn">
-                Send Reset Link
-              </button>
+              <button type="submit" className="btn">Send Reset Link</button>
               <div className="register-link">
                 <p>
                   Remembered your password?{" "}
@@ -201,3 +199,4 @@ function AuthForm({ onLoginSuccess }) {
 }
 
 export default AuthForm;
+
