@@ -2,7 +2,7 @@
   "name": "gas-frontend",
   "version": "1.0.0",
   "private": true,
-  "homepage": ".",
+  "homepage": "/",
   "dependencies": {
     "@supabase/supabase-js": "^2.53.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
