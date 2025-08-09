@@ -1,183 +1,260 @@
-import React, { useEffect, useState } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import supabase from "./services/supabaseClient";
-import AuthForm from "./AuthForm";
-import App2 from "./App2";
-import Dashboard2 from "./Dashboard2";
+import React, { useState, useEffect } from "react";
+import Navbar from "./Navbar";
+import Dashboard from "./Dashboard2";
+import Search from "./Search";
+import NewForm from "./NewForm2";
+import "./styleshome.css";
 
-
-function ProtectedRoute({ isAuthenticated, children }) {
-  return isAuthenticated ? children : <Navigate to="/" />;
-}
-
-function MainApp() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [userFullName, setUserFullName] = useState("");
+const App2 = ({ fullName, onLogout }) => {
+  const [activeTab, setActiveTab] = useState("dashboard");
+  const [correspondenceData, setCorrespondenceData] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    console.log('MainApp: Starting session check...');
-    
-    const checkSession = async () => {
-      try {
-        console.log('MainApp: Fetching session...');
-        const { data, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error("MainApp: Session error:", error);
-          setError(`Authentication error: ${error.message}`);
-          return;
-        }
-
-        console.log('MainApp: Session data received:', !!data?.session);
-
-        if (data?.session) {
-          setIsAuthenticated(true);
-          setUserFullName(data.session.user.user_metadata?.full_name || "User");
-          console.log('MainApp: User authenticated:', data.session.user.email);
-        } else {
-          console.log('MainApp: No active session found');
-        }
-      } catch (err) {
-        console.error("MainApp: Failed to fetch session:", err);
-        setError(`Failed to initialize authentication: ${err.message}`);
-      } finally {
-        setLoading(false);
-        console.log('MainApp: Session check complete');
-      }
-    };
-
-    checkSession();
-
-    // Set up auth state listener
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log('MainApp: Auth state changed:', _event, session?.user?.email);
-      
-      if (session) {
-        setIsAuthenticated(true);
-        setUserFullName(session.user.user_metadata?.full_name || "User");
-        setError(null); // Clear any previous errors
-      } else {
-        setIsAuthenticated(false);
-        setUserFullName("");
-      }
-    });
-
-    return () => {
-      console.log('MainApp: Cleaning up auth listener');
-      listener?.subscription?.unsubscribe();
-    };
-  }, []);
-
-  const handleLogout = async () => {
+  // Safe localStorage functions
+  const getLocalStorageItem = (key) => {
     try {
-      console.log('MainApp: Logging out...');
-      await supabase.auth.signOut();
-      setUserFullName("");
-      setIsAuthenticated(false);
-      setError(null);
-    } catch (err) {
-      console.error('MainApp: Logout error:', err);
-      setError(`Logout failed: ${err.message}`);
+      if (typeof window !== 'undefined' && window.localStorage) {
+        return localStorage.getItem(key);
+      }
+    } catch (error) {
+      console.warn('localStorage not available:', error);
+    }
+    return null;
+  };
+
+  const setLocalStorageItem = (key, value) => {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.setItem(key, value);
+      }
+    } catch (error) {
+      console.warn('localStorage not available:', error);
     }
   };
 
-  // Show error state
-  if (error) {
-    return (
-      <div style={{ 
-        textAlign: "center", 
-        marginTop: "50px",
-        padding: "20px",
-        backgroundColor: "#ffebee",
-        color: "#c62828",
-        minHeight: "100vh"
-      }}>
-        <h2>Application Error</h2>
-        <p>{error}</p>
-        <button 
-          onClick={() => {
-            setError(null);
-            window.location.reload();
-          }}
-          style={{
-            marginTop: "20px",
-            padding: "10px 20px",
-            backgroundColor: "#1976d2",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer"
-          }}
-        >
-          Retry
-        </button>
-      </div>
-    );
-  }
+  // Load saved correspondence data on component mount
+  useEffect(() => {
+    try {
+      const savedData = getLocalStorageItem('correspondenceData');
+      if (savedData) {
+        const parsedData = JSON.parse(savedData);
+        if (Array.isArray(parsedData)) {
+          setCorrespondenceData(parsedData);
+          console.log('App2: Loaded correspondence data from localStorage');
+        }
+      }
+    } catch (error) {
+      console.error('App2: Error loading correspondence data:', error);
+    }
+  }, []);
 
-  // Show loading state
-  if (loading) {
-    return (
-      <div style={{ 
-        textAlign: "center", 
-        marginTop: "50px",
-        backgroundColor: "#fff",
-        minHeight: "100vh",
-        padding: "20px"
-      }}>
-        <h2>Loading...</h2>
-        <p>Initializing application...</p>
-      </div>
-    );
-  }
+  // Save correspondence data to localStorage whenever it changes
+  useEffect(() => {
+    if (correspondenceData.length > 0) {
+      try {
+        setLocalStorageItem('correspondenceData', JSON.stringify(correspondenceData));
+        console.log('App2: Saved correspondence data to localStorage');
+      } catch (error) {
+        console.error('App2: Error saving correspondence data:', error);
+      }
+    }
+  }, [correspondenceData]);
 
-  console.log('MainApp: Rendering routes, isAuthenticated:', isAuthenticated);
+  const addCorrespondence = (newItem) => {
+    try {
+      // Add unique ID and timestamp if not present
+      const itemWithId = {
+        ...newItem,
+        id: newItem.id || Date.now().toString(),
+        createdAt: newItem.createdAt || new Date().toISOString(),
+      };
+      
+      setCorrespondenceData((prev) => [...prev, itemWithId]);
+      setActiveTab("dashboard");
+      setError(null); // Clear any previous errors
+      console.log('App2: Added new correspondence item');
+    } catch (error) {
+      console.error('App2: Error adding correspondence:', error);
+      setError('Failed to add correspondence item');
+    }
+  };
+
+  const deleteCorrespondence = (id) => {
+    try {
+      setCorrespondenceData((prev) => prev.filter(item => item.id !== id));
+      console.log('App2: Deleted correspondence item:', id);
+    } catch (error) {
+      console.error('App2: Error deleting correspondence:', error);
+      setError('Failed to delete correspondence item');
+    }
+  };
+
+  const updateCorrespondence = (id, updatedItem) => {
+    try {
+      setCorrespondenceData((prev) => 
+        prev.map(item => item.id === id ? { ...item, ...updatedItem } : item)
+      );
+      console.log('App2: Updated correspondence item:', id);
+    } catch (error) {
+      console.error('App2: Error updating correspondence:', error);
+      setError('Failed to update correspondence item');
+    }
+  };
+
+  const handleTabChange = (tab) => {
+    try {
+      setActiveTab(tab);
+      setError(null); // Clear errors when changing tabs
+      console.log('App2: Changed tab to:', tab);
+    } catch (error) {
+      console.error('App2: Error changing tab:', error);
+      setError('Failed to change tab');
+    }
+  };
+
+  const handleLogout = () => {
+    try {
+      console.log('App2: Logout initiated');
+      // Clear any sensitive data from localStorage if needed
+      // setLocalStorageItem('correspondenceData', '[]'); // Uncomment if you want to clear data on logout
+      if (onLogout) {
+        onLogout();
+      }
+    } catch (error) {
+      console.error('App2: Error during logout:', error);
+    }
+  };
+
+  const renderTab = () => {
+    if (loading) {
+      return (
+        <div style={{ 
+          textAlign: 'center', 
+          padding: '50px',
+          fontSize: '16px' 
+        }}>
+          Loading...
+        </div>
+      );
+    }
+
+    try {
+      switch (activeTab) {
+        case "dashboard":
+          return (
+            <Dashboard 
+              correspondenceData={correspondenceData}
+              onDelete={deleteCorrespondence}
+              onUpdate={updateCorrespondence}
+            />
+          );
+        case "search":
+          return (
+            <Search 
+              correspondenceData={correspondenceData}
+              onUpdate={updateCorrespondence}
+            />
+          );
+        case "newForm":
+          return (
+            <NewForm 
+              addCorrespondence={addCorrespondence}
+              onCancel={() => setActiveTab("dashboard")}
+            />
+          );
+        default:
+          return (
+            <div style={{ 
+              textAlign: 'center', 
+              padding: '50px',
+              color: '#666' 
+            }}>
+              Unknown tab: {activeTab}
+            </div>
+          );
+      }
+    } catch (error) {
+      console.error('App2: Error rendering tab:', error);
+      return (
+        <div style={{ 
+          textAlign: 'center', 
+          padding: '50px',
+          color: '#d32f2f',
+          backgroundColor: '#ffebee',
+          borderRadius: '4px',
+          margin: '20px'
+        }}>
+          <h3>Error Loading Content</h3>
+          <p>There was an error loading the {activeTab} tab.</p>
+          <button 
+            onClick={() => {
+              setError(null);
+              setActiveTab("dashboard");
+            }}
+            style={{
+              padding: '10px 20px',
+              backgroundColor: '#1976d2',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              marginTop: '10px'
+            }}
+          >
+            Return to Dashboard
+          </button>
+        </div>
+      );
+    }
+  };
 
   return (
-    <div style={{ minHeight: "100vh" }}>
-      <Router>
-        <Routes>
-          {/* Login Route */}
-          <Route
-            path="/"
-            element={
-              isAuthenticated ? (
-                <Navigate to="/app" replace />
-              ) : (
-                <AuthForm
-                  onLoginSuccess={(name) => {
-                    console.log('MainApp: Login success:', name);
-                    setUserFullName(name);
-                    setIsAuthenticated(true);
-                  }}
-                />
-              )
-            }
-          />
-
-          {/* Main App Route */}
-          <Route
-            path="/app"
-            element={
-              <ProtectedRoute isAuthenticated={isAuthenticated}>
-                <App2 fullName={userFullName} onLogout={handleLogout} />
-              </ProtectedRoute>
-            }
-          />
-
-          {/* Catch-all route */}
-          <Route
-            path="*"
-            element={<Navigate to="/" replace />}
-          />
-        </Routes>
-      </Router>
+    <div className="main2">
+      <Navbar 
+        onTabChange={handleTabChange} 
+        onLogout={handleLogout}
+        activeTab={activeTab}
+        fullName={fullName}
+      />
+      <div className="main">
+        <div className="top-content">
+          <h1>Government Correspondence System</h1>
+          {fullName && <h2>Welcome, {fullName}</h2>}
+        </div>
+        
+        {error && (
+          <div style={{
+            backgroundColor: '#ffebee',
+            color: '#d32f2f',
+            padding: '10px 15px',
+            margin: '10px 0',
+            borderRadius: '4px',
+            border: '1px solid #ffcdd2'
+          }}>
+            <strong>Error:</strong> {error}
+            <button 
+              onClick={() => setError(null)}
+              style={{
+                marginLeft: '10px',
+                padding: '2px 8px',
+                background: 'transparent',
+                border: '1px solid #d32f2f',
+                borderRadius: '3px',
+                color: '#d32f2f',
+                cursor: 'pointer',
+                fontSize: '12px'
+              }}
+            >
+              ✕
+            </button>
+          </div>
+        )}
+        
+        {renderTab()}
+      </div>
     </div>
   );
-}
+};
 
-export default MainApp;
-
-
+export default App2;

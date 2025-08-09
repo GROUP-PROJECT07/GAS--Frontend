@@ -8,54 +8,81 @@ function AuthForm({ onLoginSuccess }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  // Safe localStorage function
+  const setLocalStorageItem = (key, value) => {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.setItem(key, value);
+      }
+    } catch (error) {
+      console.warn('localStorage not available:', error);
+    }
+  };
+
   // --- Login ---
   const handleLogin = async (e) => {
     e.preventDefault();
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    if (error) {
-      alert(error.message);
-    } else {
-      const user = data.user;
-      localStorage.setItem("auth", "true");
-      localStorage.setItem(
-        "userFullName",
-        user?.user_metadata?.full_name || fullName
-      );
-      onLoginSuccess?.(user?.user_metadata?.full_name || fullName);
+      if (error) {
+        alert(error.message);
+      } else {
+        const user = data.user;
+        const userFullName = user?.user_metadata?.full_name || fullName;
+        
+        // Safe localStorage usage
+        setLocalStorageItem("auth", "true");
+        setLocalStorageItem("userFullName", userFullName);
+        
+        onLoginSuccess?.(userFullName);
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+      alert('Login failed. Please try again.');
     }
   };
 
   // --- Register ---
   const handleRegister = async (e) => {
     e.preventDefault();
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { full_name: fullName },
-      },
-    });
-    if (error) {
-      alert(error.message);
-    } else {
-      alert("Registration successful! Please check your email to confirm.");
-      setView("login");
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { full_name: fullName },
+        },
+      });
+      if (error) {
+        alert(error.message);
+      } else {
+        alert("Registration successful! Please check your email to confirm.");
+        setView("login");
+      }
+    } catch (err) {
+      console.error('Registration error:', err);
+      alert('Registration failed. Please try again.');
     }
   };
 
   // --- Forgot Password ---
   const handleForgotPassword = async (e) => {
     e.preventDefault();
-    const { error } = await supabase.auth.resetPasswordForEmail(email);
-    if (error) {
-      alert(error.message);
-    } else {
-      alert("Password reset email sent!");
-      setView("login");
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email);
+      if (error) {
+        alert(error.message);
+      } else {
+        alert("Password reset email sent!");
+        setView("login");
+      }
+    } catch (err) {
+      console.error('Password reset error:', err);
+      alert('Password reset failed. Please try again.');
     }
   };
 
@@ -199,4 +226,3 @@ function AuthForm({ onLoginSuccess }) {
 }
 
 export default AuthForm;
-
