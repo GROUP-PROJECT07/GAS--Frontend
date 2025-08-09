@@ -1,16 +1,16 @@
 {
   "version": 2,
+  "framework": "create-react-app",
   "builds": [
     {
       "src": "package.json",
       "use": "@vercel/static-build"
     }
   ],
-  "framework": "create-react-app",
-  "routes": [
+  "rewrites": [
     {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/(.*)",
+      "destination": "/public/index.html"
     }
   ]
 }
