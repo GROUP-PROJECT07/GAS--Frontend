@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import supabase from "./services/supabaseClient";
 import AuthForm from "./AuthForm";
 import App2 from "./App2";
+import Dashboard2 from "./Dashboard2";
+
 
 function ProtectedRoute({ isAuthenticated, children }) {
   return isAuthenticated ? children : <Navigate to="/" />;

@@ -1,17 +1,17 @@
-import { createClient } from '@supabase/supabase-js';
+// services/supabaseClient.js
+import { createClient } from '@supabase/supabase-js'
 
+const supabaseUrl = process.env.REACT_APP_SUPABASE_URL
+const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY
 
-const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
-const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
-
-// Ensure environment variables are loaded
+// Add error checking
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error(
-    'Missing Supabase environment variables. ' +
-    'Ensure REACT_APP_SUPABASE_URL and REACT_APP_SUPABASE_ANON_KEY are set.'
-  );
+  console.error('Missing Supabase environment variables:');
+  console.error('REACT_APP_SUPABASE_URL:', supabaseUrl);
+  console.error('REACT_APP_SUPABASE_ANON_KEY:', supabaseAnonKey ? '[SET]' : '[MISSING]');
+  throw new Error('Missing Supabase environment variables');
 }
 
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-export default supabase;
+export default supabase
