@@ -208,7 +208,7 @@ function MainApp() {
             path="/app"
             element={
               <ProtectedRoute isAuthenticated={isAuthenticated}>
-                <Dashboard2 fullName={userFullName} onLogout={handleLogout} />
+                <Dashboard fullName={userFullName} onLogout={handleLogout} />
               </ProtectedRoute>
             }
           />
