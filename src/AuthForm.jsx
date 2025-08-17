@@ -8,7 +8,6 @@ function AuthForm({ onLoginSuccess }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // Safe localStorage function
   const setLocalStorageItem = (key, value) => {
     try {
       if (typeof window !== "undefined" && window.localStorage) {
@@ -30,16 +29,16 @@ function AuthForm({ onLoginSuccess }) {
 
       if (error) {
         alert(error.message);
-      } else {
-        const user = data.user;
-        const userFullName = user?.user_metadata?.full_name || fullName;
-
-        // Safe localStorage usage
-        setLocalStorageItem("auth", "true");
-        setLocalStorageItem("userFullName", userFullName);
-
-        onLoginSuccess?.(userFullName);
+        return;
       }
+
+      const user = data.user;
+      const userFullName = user?.user_metadata?.full_name || fullName;
+
+      setLocalStorageItem("auth", "true");
+      setLocalStorageItem("userFullName", userFullName);
+
+      onLoginSuccess?.(userFullName);
     } catch (err) {
       console.error("Login error:", err);
       alert("Login failed. Please try again.");
@@ -50,19 +49,22 @@ function AuthForm({ onLoginSuccess }) {
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: { full_name: fullName },
+          data: { full_name: fullName }, // user_metadata
         },
       });
+
       if (error) {
         alert(error.message);
-      } else {
-        alert("Registration successful! Please check your email to confirm.");
-        setView("login");
+        return;
       }
+
+      console.log("Registration response:", data);
+      alert("Registration successful! Please check your email to confirm.");
+      setView("login");
     } catch (err) {
       console.error("Registration error:", err);
       alert("Registration failed. Please try again.");
@@ -226,4 +228,3 @@ function AuthForm({ onLoginSuccess }) {
 }
 
 export default AuthForm;
-
