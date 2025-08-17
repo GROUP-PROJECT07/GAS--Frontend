@@ -12,7 +12,7 @@ const App2 = ({ fullName, onLogout }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // ✅ Fetch from Supabase on mount
+  // Fetch from Supabase on mount
   useEffect(() => {
     const fetchData = async () => {
       const { data, error } = await supabase
@@ -120,3 +120,4 @@ const App2 = ({ fullName, onLogout }) => {
 };
 
 export default App2;
+
