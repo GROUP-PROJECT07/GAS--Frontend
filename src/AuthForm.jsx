@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "./styles.css";
-import supabase from "./services/supabaseClient";
+import { supabase } from "./utils/supabase"; // ✅ fixed import
 
 function AuthForm({ onLoginSuccess }) {
   const [view, setView] = useState("login"); // 'login' | 'register' | 'forgot'
@@ -11,11 +11,11 @@ function AuthForm({ onLoginSuccess }) {
   // Safe localStorage function
   const setLocalStorageItem = (key, value) => {
     try {
-      if (typeof window !== 'undefined' && window.localStorage) {
+      if (typeof window !== "undefined" && window.localStorage) {
         localStorage.setItem(key, value);
       }
     } catch (error) {
-      console.warn('localStorage not available:', error);
+      console.warn("localStorage not available:", error);
     }
   };
 
@@ -33,16 +33,16 @@ function AuthForm({ onLoginSuccess }) {
       } else {
         const user = data.user;
         const userFullName = user?.user_metadata?.full_name || fullName;
-        
+
         // Safe localStorage usage
         setLocalStorageItem("auth", "true");
         setLocalStorageItem("userFullName", userFullName);
-        
+
         onLoginSuccess?.(userFullName);
       }
     } catch (err) {
-      console.error('Login error:', err);
-      alert('Login failed. Please try again.');
+      console.error("Login error:", err);
+      alert("Login failed. Please try again.");
     }
   };
 
@@ -64,8 +64,8 @@ function AuthForm({ onLoginSuccess }) {
         setView("login");
       }
     } catch (err) {
-      console.error('Registration error:', err);
-      alert('Registration failed. Please try again.');
+      console.error("Registration error:", err);
+      alert("Registration failed. Please try again.");
     }
   };
 
@@ -81,8 +81,8 @@ function AuthForm({ onLoginSuccess }) {
         setView("login");
       }
     } catch (err) {
-      console.error('Password reset error:', err);
-      alert('Password reset failed. Please try again.');
+      console.error("Password reset error:", err);
+      alert("Password reset failed. Please try again.");
     }
   };
 
