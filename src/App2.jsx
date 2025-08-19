@@ -3,7 +3,7 @@ import Navbar from "./Navbar";
 import Dashboard from "./Dashboard2";
 import Search from "./Search";
 import NewForm from "./NewForm2";
-import supabase from "../utils/supabase"; 
+import Supabase from "./supabase2"; 
 import "./styleshome.css";
 
 const App2 = ({ fullName, onLogout }) => {
@@ -15,7 +15,7 @@ const App2 = ({ fullName, onLogout }) => {
   // Fetch from Supabase on mount
   useEffect(() => {
     const fetchData = async () => {
-      const { data, error } = await supabase
+      const { data, error } = await Supabase
         .from("correspondence")
         .select("*")
         .order("created_at", { ascending: false });
@@ -34,7 +34,7 @@ const App2 = ({ fullName, onLogout }) => {
 
   // ✅ Add new correspondence
   const addCorrespondence = async (newItem) => {
-    const { data, error } = await supabase
+    const { data, error } = await Supabase
       .from("correspondence")
       .insert([newItem])
       .select();
@@ -50,7 +50,7 @@ const App2 = ({ fullName, onLogout }) => {
 
   // ✅ Delete correspondence
   const deleteCorrespondence = async (id) => {
-    const { error } = await supabase
+    const { error } = await Supabase
       .from("correspondence")
       .delete()
       .eq("id", id);
@@ -65,7 +65,7 @@ const App2 = ({ fullName, onLogout }) => {
 
   // ✅ Update correspondence
   const updateCorrespondence = async (id, updatedItem) => {
-    const { data, error } = await supabase
+    const { data, error } = await Supabase
       .from("correspondence")
       .update(updatedItem)
       .eq("id", id)

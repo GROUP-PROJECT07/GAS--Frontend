@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import supabase from "./services/supabaseClient";
 import AuthForm from "./AuthForm";
 import Dashboard from "./Dashboard2";
+import App2 from "./App2";
+
 
 function ProtectedRoute({ isAuthenticated, children }) {
   return isAuthenticated ? children : <Navigate to="/" />;
@@ -208,6 +210,7 @@ function MainApp() {
             path="/app"
             element={
               <ProtectedRoute isAuthenticated={isAuthenticated}>
+                <App2 />
                 <Dashboard fullName={userFullName} onLogout={handleLogout} />
               </ProtectedRoute>
             }
