@@ -29,7 +29,7 @@ const NewForm = ({ addCorrespondence }) => {
 
     if (formData.attachment) {
       const filePath = `files/${Date.now()}-${formData.attachment.name}`;
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from("correspondence-files")
         .upload(filePath, formData.attachment);
 
@@ -66,6 +66,7 @@ const NewForm = ({ addCorrespondence }) => {
       addCorrespondence(data[0]);
     }
 
+    // Reset form
     setFormData({
       date: "",
       sender: "",
@@ -82,52 +83,112 @@ const NewForm = ({ addCorrespondence }) => {
     <div>
       <h2>New Correspondence</h2>
       <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label>Date:</label>
-          <input type="date" name="date" value={formData.date} onChange={handleChange} required />
-        </div>
-        <div className="form-group">
-          <label>Sender:</label>
-          <input type="text" name="sender" value={formData.sender} onChange={handleChange} required />
-        </div>
-        <div className="form-group">
-          <label>Recipient:</label>
-          <input type="text" name="recipient" value={formData.recipient} onChange={handleChange} required />
-        </div>
-        <div className="form-group">
-          <label>Subject:</label>
-          <input type="text" name="subject" value={formData.subject} onChange={handleChange} required />
-        </div>
-        <div className="form-group">
-          <label>Department:</label>
-          <input type="text" name="department" value={formData.department} onChange={handleChange} required />
-        </div>
-        <div className="form-group">
-          <label>Status:</label>
-          <select name="status" value={formData.status} onChange={handleChange}>
-            <option>Pending</option>
-            <option>Completed</option>
-          </select>
-        </div>
-        <div className="form-group">
-          <label>Attachment (PDF/Image):</label>
-          <input type="file" name="attachment" accept=".pdf,.jpg,.png" onChange={handleChange} />
-        </div>
-        <div className="form-group">
-          <label>Message content (optional):</label>
-          <textarea
-            name="message"
-            value={formData.message}
-            onChange={handleChange}
-            placeholder="Message content (optional)"
-          />
-        </div>
-        <button type="submit">Save Correspondence</button>
+        <table>
+          <tbody>
+            <tr>
+              <td><label>Date</label></td>
+              <td>
+                <input
+                  type="date"
+                  name="date"
+                  value={formData.date}
+                  onChange={handleChange}
+                  required
+                />
+              </td>
+            </tr>
+            <tr>
+              <td><label>Sender</label></td>
+              <td>
+                <input
+                  type="text"
+                  name="sender"
+                  value={formData.sender}
+                  onChange={handleChange}
+                  required
+                />
+              </td>
+            </tr>
+            <tr>
+              <td><label>Recipient</label></td>
+              <td>
+                <input
+                  type="text"
+                  name="recipient"
+                  value={formData.recipient}
+                  onChange={handleChange}
+                  required
+                />
+              </td>
+            </tr>
+            <tr>
+              <td><label>Subject</label></td>
+              <td>
+                <input
+                  type="text"
+                  name="subject"
+                  value={formData.subject}
+                  onChange={handleChange}
+                  required
+                />
+              </td>
+            </tr>
+            <tr>
+              <td><label>Department</label></td>
+              <td>
+                <input
+                  type="text"
+                  name="department"
+                  value={formData.department}
+                  onChange={handleChange}
+                  required
+                />
+              </td>
+            </tr>
+            <tr>
+              <td><label>Status</label></td>
+              <td>
+                <select
+                  name="status"
+                  value={formData.status}
+                  onChange={handleChange}
+                >
+                  <option>Pending</option>
+                  <option>Completed</option>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td><label>Attachment</label></td>
+              <td>
+                <input
+                  type="file"
+                  name="attachment"
+                  accept=".pdf,.jpg,.png"
+                  onChange={handleChange}
+                />
+              </td>
+            </tr>
+            <tr>
+              <td><label>Message</label></td>
+              <td>
+                <textarea
+                  name="message"
+                  value={formData.message}
+                  onChange={handleChange}
+                  placeholder="Message content (optional)"
+                />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <button type="submit" style={{ marginTop: "1rem" }}>
+          Save Correspondence
+        </button>
       </form>
     </div>
   );
 };
 
 export default NewForm;
-
-
