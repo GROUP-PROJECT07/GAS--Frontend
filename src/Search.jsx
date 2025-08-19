@@ -40,12 +40,6 @@ const Search = () => {
     setFilteredData(result);
   };
 
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
-      handleSearch();
-    }
-  };
-
   return (
     <div>
       <h2>Search Correspondence</h2>
@@ -54,7 +48,6 @@ const Search = () => {
         placeholder="Search by ID, Date, Subject, Department, Sender/Recipient, Status"
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
-        onKeyDown={handleKeyDown}
       />
       <button onClick={handleSearch}>Search</button>
 
@@ -77,8 +70,8 @@ const Search = () => {
           </thead>
           <tbody>
             {filteredData.length > 0 ? (
-              filteredData.map((item) => (
-                <tr key={item.id}>
+              filteredData.map((item, index) => (
+                <tr key={index}>
                   <td>{item.id}</td>
                   <td>{item.date}</td>
                   <td>{item.sender}</td>
@@ -88,7 +81,11 @@ const Search = () => {
                   <td>{item.status}</td>
                   <td>
                     {item.file_url ? (
-                      <a href={item.file_url} target="_blank" rel="noopener noreferrer">
+                      <a
+                        href={item.file_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
                         View
                       </a>
                     ) : (
@@ -112,4 +109,3 @@ const Search = () => {
 };
 
 export default Search;
-
